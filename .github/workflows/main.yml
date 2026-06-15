@@ -24,3 +24,18 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: dhanyah/my-flask-app:latest
+deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull dhanyah/my-flask-app:latest
+            docker stop my-flask-app || true
+            docker rm my-flask-app || true
+            docker run -d -p 80:5000 --name my-flask-app dhanyah/my-flask-app:latest
